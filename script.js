@@ -120,7 +120,7 @@ function moveCircles(circles) {
 	}
 	setTimeout(function () {
 		moveCircles(circles)
-	}, 5);
+	}, 20);
 }
 
 function drawCircle(targetX, targetY) {
