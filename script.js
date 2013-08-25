@@ -1,21 +1,81 @@
-var canvas = document.getElementById("canvas");
-canvas.width = 0.9 * window.innerWidth;
-canvas.height = 0.9 * window.innerHeight;
-var ctx = canvas.getContext("2d");
-drawBorder();
-var targetX = undefined, targetY = undefined, circles = new Array();
-var flag = false;
-setTimeout(function () {
-	moveCircles(circles)
-}, 0);
+var canvas, ctx, targetX, targetY, circles, flag;
+HTMLCanvasElement.prototype.relMouseCoords = relMouseCoords;
+
+window.onload = function () {
+	canvas = document.getElementById("canvas");
+	canvas.width = 0.9 * window.innerWidth;
+	canvas.height = 0.9 * window.innerHeight;
+	ctx = canvas.getContext("2d");
+	drawBorder();
+	targetX = isFinite(localStorage.getItem("targetX")) ? parseInt(localStorage.getItem("targetX")) : undefined;
+	targetY = isFinite(localStorage.getItem("targetY")) ? parseInt(localStorage.getItem("targetY")) : undefined;
+	if (targetX && targetY) {
+		drawCircle(targetX, targetY);
+	}
+	circles = new Array();
+	if (localStorage.circles && localStorage.circles !== "undefined") {
+		circles = JSON.parse(localStorage.circles);
+	}
+	updateStorage();
+	flag = false;
+	setTimeout(function () {
+		moveCircles()
+	}, 0);
+
+	canvas.addEventListener("click", function (e) {
+		coords = canvas.relMouseCoords(e);
+		canvasX = coords.x;
+		canvasY = coords.y;
+		if ((!isFinite(targetX) || !isFinite(targetY)) && canvasX <= canvas.width / 2 - 25) {
+			targetX = canvasX;
+			targetY = canvasY;
+			updateStorage();
+			drawCircle(targetX, targetY);
+		}
+	});
+
+	canvas.addEventListener("mousedown", function (e) {
+		coords = canvas.relMouseCoords(e);
+		canvasX = coords.x;
+		canvasY = coords.y;
+		if ((targetX - canvasX) * (targetX - canvasX) + (targetY - canvasY) * (targetY - canvasY) <= (20) * (20)) {
+			flag = true;
+		}
+	});
+
+	canvas.addEventListener("mouseup", function (e) {
+		flag = false;
+	});
+
+	canvas.addEventListener("mousemove", function (e) {
+		if (flag) {
+			coords = canvas.relMouseCoords(e);
+			canvasX = coords.x;
+			canvasY = coords.y;
+			if (canvasX <= canvas.width / 2 - 25) {
+				targetX = canvasX;
+				targetY = canvasY <= canvas.height ? canvasY : canvas.height;
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				drawCircle(targetX, targetY);
+				drawBorder();
+			} else if (canvasX <= canvas.width) {
+				circles[circles.length] = new circle(canvas.width / 2 + 25, canvasY);
+				targetX = undefined;
+				targetY = undefined;
+				flag = false;
+			}
+			updateStorage();
+		}
+	});
+}
 
 function circle(xPos, yPos) {
 	this.xPos = xPos;
 	this.yPos = yPos;
 	this.xPrev = undefined;
 	this.yPrev = undefined;
-	this.xVel = 0;
-	this.yVel = 0;
+	this.xVel = undefined;
+	this.yVel = undefined;
 }
 
 function relMouseCoords(event) {
@@ -39,57 +99,11 @@ function relMouseCoords(event) {
 	}
 }
 
-HTMLCanvasElement.prototype.relMouseCoords = relMouseCoords;
-
-canvas.addEventListener("click", function (e) {
-	coords = canvas.relMouseCoords(e);
-	canvasX = coords.x;
-	canvasY = coords.y;
-	if ((targetX == undefined || targetY == undefined) && canvasX <= canvas.width / 2 - 25) {
-		targetX = canvasX;
-		targetY = canvasY;
-		drawCircle(targetX, targetY);
-	}
-});
-
-canvas.addEventListener("mousedown", function (e) {
-	coords = canvas.relMouseCoords(e);
-	canvasX = coords.x;
-	canvasY = coords.y;
-	if ((targetX - canvasX) * (targetX - canvasX) + (targetY - canvasY) * (targetY - canvasY) <= (20) * (20)) {
-		flag = true;
-	}
-});
-
-canvas.addEventListener("mouseup", function (e) {
-	flag = false;
-});
-
-canvas.addEventListener("mousemove", function (e) {
-	if (flag) {
-		coords = canvas.relMouseCoords(e);
-		canvasX = coords.x;
-		canvasY = coords.y;
-		if (canvasX <= canvas.width / 2 - 25) {
-			targetX = canvasX;
-			targetY = canvasY <= canvas.height ? canvasY : canvas.height;
-			ctx.clearRect(0, 0, canvas.width, canvas.height);
-			drawCircle(targetX, targetY);
-			drawBorder();
-		} else if (canvasX <= canvas.width) {
-			circles[circles.length] = new circle(canvas.width / 2 + 25, canvasY);
-			targetX = undefined;
-			targetY = undefined;
-			flag = false;
-		}
-	}
-});
-
-function moveCircles(circles) {
+function moveCircles() {
 	if (circles.length > 0) {
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 		for (var i = 0; i < circles.length; i++) {
-			if (circles[i].xVel == 0) {
+			if (!isFinite(circles[i].xVel) || !isFinite(circles[i].yVel)) {
 				circles[i].xVel = Math.floor((Math.random() * 4) + 1);
 				circles[i].yVel = Math.floor((Math.random() * 4) + 1) * signum(Math.random() - 0.5);
 			}
@@ -114,12 +128,13 @@ function moveCircles(circles) {
 				circles[i].yVel = circles[i].yVel * (-1);
 			}
 			drawCircle(circles[i].xPos, circles[i].yPos);
+			updateStorage();
 		}
 		drawCircle(targetX, targetY);
 		drawBorder();
 	}
 	setTimeout(function () {
-		moveCircles(circles)
+		moveCircles()
 	}, 20);
 }
 
@@ -138,4 +153,21 @@ function drawBorder() {
 
 function signum(m) {
 	return m > 0 ? 1 : -1;
+}
+
+function updateStorage() {
+	localStorage.setItem("targetX", targetX);
+	localStorage.setItem("targetY", targetY);
+	localStorage.setItem("circles", JSON.stringify(circles));
+}
+
+function clearStorage() {
+	localStorage.removeItem("targetX");
+	localStorage.removeItem("targetX");
+	localStorage.removeItem("circles");
+	targetX = undefined;
+	targetY = undefined;
+	circles = new Array();
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	drawBorder();
 }
