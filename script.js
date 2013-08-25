@@ -4,7 +4,7 @@ HTMLCanvasElement.prototype.relMouseCoords = relMouseCoords;
 window.onload = function () {
 	canvas = document.getElementById("canvas");
 	canvas.width = 0.9 * window.innerWidth;
-	canvas.height = 0.9 * window.innerHeight;
+	canvas.height = 0.8 * window.innerHeight;
 	ctx = canvas.getContext("2d");
 	drawBorder();
 	targetX = isFinite(localStorage.getItem("targetX")) ? parseInt(localStorage.getItem("targetX")) : undefined;
