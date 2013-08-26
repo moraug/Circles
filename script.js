@@ -176,25 +176,46 @@ function signum(m) {
 function collision(n) {
 	var circle = circles[n];
 	for (var i = 0; i < circles.length; i++) {
-		if (i != n && (circles[i].xPos - circles[n].xPos) * (circles[i].xPos - circles[n].xPos) + (circles[i].yPos - circles[n].yPos) * (circles[i].yPos - circles[n].yPos) <= (2*20)*(2*20)) {
+		if (i != n && (circles[i].xPos - circles[n].xPos) * (circles[i].xPos - circles[n].xPos) + (circles[i].yPos - circles[n].yPos) * (circles[i].yPos - circles[n].yPos) <= (2 * 20) * (2 * 20)) {
 			//console.log(i+" "+n);
 			//circles[n].xPos = circles[n].xPrev;
 			//circles[n].yPos = circles[n].yPrev;
 			var x1n = circles[i].xPos;
 			var y1n = circles[i].yPos;
 			var x2p = circles[n].xPrev;
-			var y2p = circles[n].xPrev;
+			var y2p = circles[n].yPrev;
 			var x2v = circles[n].xVel;
 			var y2v = circles[n].yVel;
-			var a = x2p-x1n;
+			var a = x2p - x1n;
 			var b = x2v;
-			var c = y2p-y1n;
+			var c = y2p - y1n;
 			var d = y2v;
-			var Det = -4*(a*b+c*d)*(a*b+c*d)+4*(b*b+d*d)*(a*a+c*c-(2*20)*(2*20));
-			var t1 = (-2*(a*b+c*d)+Math.sqrt(Det))/(2*(b*b+d*d));
-			var t2 = (-2*(a*b+c*d)-Math.sqrt(Det))/(2*(b*b+d*d));
-			var t = Math.min(t1,t2)<0?Math.max(t1,t2):Math.min(t1,t2);
-			console.log(t1+" "+t2);
+			var Det = 4 * (a * b + c * d) * (a * b + c * d) - 4 * (b * b + d * d) * (a * a + c * c - (2 * 20) * (2 * 20));
+			var t1 = (-2 * (a * b + c * d) + Math.sqrt(Det)) / (2 * (b * b + d * d));
+			var t2 = (-2 * (a * b + c * d) - Math.sqrt(Det)) / (2 * (b * b + d * d));
+			var t = Math.min(t1, t2) < 0 ? Math.max(t1, t2) : Math.min(t1, t2);
+			//console.log(t1 + " " + t2);
+			//console.log("a = " + a + "; b = " + b + "; c = " + c + "; d = " + d + ";");
+			var xc = x2p + t * x2v;
+			var yc = y2p + t * y2v;
+			var px = (x1n + xc) / 2;
+			var py = (y1n + yc) / 2;
+			var Dp = (x1n - xc) * px + (y1n - yc) * py;
+			var Dpp = x1n * yc - xc * y1n;
+			var l = Math.sqrt(x2v * x2v + y2v * y2v);
+			var lb = Math.sqrt((xc - x2p) * (xc - x2p) + (yc - y2p) * (yc - y2p));
+			var la = l - lb;
+			var A = (y2p - yc) * px + (xc - x2p) * py;
+			var xs = x2p - (xc - px);
+			var ys = y2p - (yc - py);
+			var Hx = (xs + px) / 2;
+			var Hy = (ys + py) / 2;
+			var B = (x1n - xc) * Hx + (y1n - yc) * Hy;
+			var Ly = ((x1n - xc) * Dpp + (y1n - yc) * B) / ((y1n - yc) * (y1n - yc) + (x1n - xc) * (x1n - xc));
+			var Lx = ((x1n - xc) * Ly - Dpp) / (y1n - yc);
+			var Mx = 2 * Lx - Hx;
+			var My = 2 * Ly - Hy;
+			var C = (My - py) * xc + (px - Mx) * yc;
 		}
 	}
 }
