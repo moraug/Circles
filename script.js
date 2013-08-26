@@ -127,6 +127,7 @@ function moveCircles() {
 				circles[i].yPos = 0 + 20 + (Math.abs(circles[i].yVel) - (circles[i].yPrev - 20 - 0));
 				circles[i].yVel = circles[i].yVel * (-1);
 			}
+			collision(i);
 			drawCircle(circles[i].xPos, circles[i].yPos);
 			updateStorage();
 		}
@@ -151,10 +152,6 @@ function drawBorder() {
 	ctx.stroke();
 }
 
-function signum(m) {
-	return m > 0 ? 1 : -1;
-}
-
 function updateStorage() {
 	localStorage.setItem("targetX", targetX);
 	localStorage.setItem("targetY", targetY);
@@ -170,4 +167,34 @@ function clearStorage() {
 	circles = new Array();
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	drawBorder();
+}
+
+function signum(m) {
+	return m > 0 ? 1 : -1;
+}
+
+function collision(n) {
+	var circle = circles[n];
+	for (var i = 0; i < circles.length; i++) {
+		if (i != n && (circles[i].xPos - circles[n].xPos) * (circles[i].xPos - circles[n].xPos) + (circles[i].yPos - circles[n].yPos) * (circles[i].yPos - circles[n].yPos) <= (2*20)*(2*20)) {
+			//console.log(i+" "+n);
+			//circles[n].xPos = circles[n].xPrev;
+			//circles[n].yPos = circles[n].yPrev;
+			var x1n = circles[i].xPos;
+			var y1n = circles[i].yPos;
+			var x2p = circles[n].xPrev;
+			var y2p = circles[n].xPrev;
+			var x2v = circles[n].xVel;
+			var y2v = circles[n].yVel;
+			var a = x2p-x1n;
+			var b = x2v;
+			var c = y2p-y1n;
+			var d = y2v;
+			var Det = -4*(a*b+c*d)*(a*b+c*d)+4*(b*b+d*d)*(a*a+c*c-(2*20)*(2*20));
+			var t1 = (-2*(a*b+c*d)+Math.sqrt(Det))/(2*(b*b+d*d));
+			var t2 = (-2*(a*b+c*d)-Math.sqrt(Det))/(2*(b*b+d*d));
+			var t = Math.min(t1,t2)<0?Math.max(t1,t2):Math.min(t1,t2);
+			console.log(t1+" "+t2);
+		}
+	}
 }
