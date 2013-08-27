@@ -177,11 +177,12 @@ function collision(n) {
 	var circle = circles[n];
 	for (var i = 0; i < circles.length; i++) {
 		if (i != n && (circles[i].xPos - circles[n].xPos) * (circles[i].xPos - circles[n].xPos) + (circles[i].yPos - circles[n].yPos) * (circles[i].yPos - circles[n].yPos) <= (2 * 20) * (2 * 20)) {
-			//console.log(i+" "+n);
-			//circles[n].xPos = circles[n].xPrev;
-			//circles[n].yPos = circles[n].yPrev;
+			var x1p = circles[i].xPrev;
+			var y1p = circles[i].yPrev;
 			var x1n = circles[i].xPos;
 			var y1n = circles[i].yPos;
+			var x1v = circles[i].xVel;
+			var y1v = circles[i].yVel;
 			var x2p = circles[n].xPrev;
 			var y2p = circles[n].yPrev;
 			var x2v = circles[n].xVel;
@@ -194,8 +195,6 @@ function collision(n) {
 			var t1 = (-2 * (a * b + c * d) + Math.sqrt(Det)) / (2 * (b * b + d * d));
 			var t2 = (-2 * (a * b + c * d) - Math.sqrt(Det)) / (2 * (b * b + d * d));
 			var t = Math.min(t1, t2) < 0 ? Math.max(t1, t2) : Math.min(t1, t2);
-			//console.log(t1 + " " + t2);
-			//console.log("a = " + a + "; b = " + b + "; c = " + c + "; d = " + d + ";");
 			var xc = x2p + t * x2v;
 			var yc = y2p + t * y2v;
 			var px = (x1n + xc) / 2;
@@ -225,34 +224,55 @@ function collision(n) {
 			var y2 = C / (px - Mx) + ((py - My) / (px - Mx)) * x2;
 			var x2n,
 			y2n;
-			if (Math.abs(x1 - Mx) != Math.abs(x2 - Mx)) {
-				if (Math.abs(x1 - Mx) < Math.abs(x2 - Mx)) {
-					x2n = x1;
-					y2n = y1;
-				} else {
-					x2n = x2;
-					y2n = y2;
-				}
+			if ((x1 - Mx) * (x1 - Mx) + (y1 - My) * (y1 - My) < (x2 - Mx) * (x2 - Mx) + (y2 - My) * (y2 - My)) {
+				x2n = x1;
+				y2n = y1;
 			} else {
-				if (Math.abs(y1 - My) < Math.abs(y2 - My)) {
-					x2n = x1;
-					y2n = y1;
-				} else {
-					x2n = x2;
-					y2n = y2;
-				}
+				x2n = x2;
+				y2n = y2;
 			}
-			var x2v2 = (l / la) * (x2n - xc);
-			var y2v2 = (l / la) * (y2n - yc);
-			//console.log("x2n = " + x2n + "; y2n = " + y2n + "; x2p = " + x2p + "; y2p = " + y2p + ";");
-			//console.log("x2v = " + x2v + "; y2v = " + y2v + "; x2v2 = " + x2v2 + "; y2v2 = " + y2v2 + ";");
-			drawCircle(xc, yc);
+			var x2v2 =  - (l / la) * (x2n - xc);
+			var y2v2 =  - (l / la) * (y2n - yc);
 			circles[n].xPos = x2n;
 			circles[n].yPos = y2n;
 			circles[n].xPrev = xc;
 			circles[n].yPrev = yc;
 			circles[n].xVel = x2v2;
 			circles[n].yVel = y2v2;
+			xs = x1p - (x1n - px);
+			ys = y1p - (y1n - py);
+			Hx = (xs + px) / 2;
+			Hy = (ys + py) / 2;
+			B = (x1n - xc) * Hx + (y1n - yc) * Hy;
+			Ly = ((x1n - xc) * Dpp + (y1n - yc) * B) / ((y1n - yc) * (y1n - yc) + (x1n - xc) * (x1n - xc));
+			Lx = ((x1n - xc) * Ly - Dpp) / (y1n - yc);
+			Mx = 2 * Lx - Hx;
+			My = 2 * Ly - Hy;
+			C = (My - py) * x1n + (px - Mx) * y1n;
+			ca = C / (px - Mx) - y1n;
+			cb = (py - My) / (px - Mx);
+			Det2 = (2 * ca * cb - 2 * x1n) * (2 * ca * cb - 2 * x1n) - 4 * (1 + cb * cb) * (x1n * x1n + ca * ca - (x1v * x1v + y1v * y1v));
+			x1 = ((2 * x1n - 2 * ca * cb) + Math.sqrt(Det2)) / (2 * (1 + cb * cb));
+			x2 = ((2 * x1n - 2 * ca * cb) - Math.sqrt(Det2)) / (2 * (1 + cb * cb));
+			y1 = C / (px - Mx) + ((py - My) / (px - Mx)) * x1;
+			y2 = C / (px - Mx) + ((py - My) / (px - Mx)) * x2;
+			var x1n2,
+			y1n2;
+			if ((x1 - px) * (x1 - px) + (y1 - py) * (y1 - py) > (x2 - px) * (x2 - px) + (y2 - py) * (y2 - py)) {
+				x1n2 = x1;
+				y1n2 = y1;
+			} else {
+				x1n2 = x2;
+				y1n2 = y2;
+			}
+			var x1v2 = (x1n2 - x1n);
+			var y1v2 = (y1n2 - y1n);
+			circles[i].xPos = x1n2;
+			circles[i].yPos = y1n2;
+			circles[i].xPrev = x1n;
+			circles[i].yPrev = y1n;
+			circles[i].xVel = x1v2;
+			circles[i].yVel = y1v2;
 		}
 	}
 }
