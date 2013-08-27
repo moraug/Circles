@@ -216,6 +216,43 @@ function collision(n) {
 			var Mx = 2 * Lx - Hx;
 			var My = 2 * Ly - Hy;
 			var C = (My - py) * xc + (px - Mx) * yc;
+			var ca = C / (px - Mx) - yc;
+			var cb = (py - My) / (px - Mx);
+			var Det2 = (2 * ca * cb - 2 * xc) * (2 * ca * cb - 2 * xc) - 4 * (1 + cb * cb) * (xc * xc + ca * ca - la * la);
+			var x1 = ((2 * xc - 2 * ca * cb) + Math.sqrt(Det2)) / (2 * (1 + cb * cb));
+			var x2 = ((2 * xc - 2 * ca * cb) - Math.sqrt(Det2)) / (2 * (1 + cb * cb));
+			var y1 = C / (px - Mx) + ((py - My) / (px - Mx)) * x1;
+			var y2 = C / (px - Mx) + ((py - My) / (px - Mx)) * x2;
+			var x2n,
+			y2n;
+			if (Math.abs(x1 - Mx) != Math.abs(x2 - Mx)) {
+				if (Math.abs(x1 - Mx) < Math.abs(x2 - Mx)) {
+					x2n = x1;
+					y2n = y1;
+				} else {
+					x2n = x2;
+					y2n = y2;
+				}
+			} else {
+				if (Math.abs(y1 - My) < Math.abs(y2 - My)) {
+					x2n = x1;
+					y2n = y1;
+				} else {
+					x2n = x2;
+					y2n = y2;
+				}
+			}
+			var x2v2 = (l / la) * (x2n - xc);
+			var y2v2 = (l / la) * (y2n - yc);
+			//console.log("x2n = " + x2n + "; y2n = " + y2n + "; x2p = " + x2p + "; y2p = " + y2p + ";");
+			//console.log("x2v = " + x2v + "; y2v = " + y2v + "; x2v2 = " + x2v2 + "; y2v2 = " + y2v2 + ";");
+			drawCircle(xc, yc);
+			circles[n].xPos = x2n;
+			circles[n].yPos = y2n;
+			circles[n].xPrev = xc;
+			circles[n].yPrev = yc;
+			circles[n].xVel = x2v2;
+			circles[n].yVel = y2v2;
 		}
 	}
 }
