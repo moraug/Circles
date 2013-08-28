@@ -76,6 +76,10 @@ function circle(xPos, yPos) {
 	this.yPrev = undefined;
 	this.xVel = undefined;
 	this.yVel = undefined;
+	var r = Math.floor((Math.random() * 239) + 16).toString(16);
+	var g = Math.floor((Math.random() * 239) + 16).toString(16);
+	var b = Math.floor((Math.random() * 239) + 16).toString(16);
+	this.color = "#" + r + g + b;
 }
 
 function relMouseCoords(event) {
@@ -128,7 +132,7 @@ function moveCircles() {
 				circles[i].yVel = circles[i].yVel * (-1);
 			}
 			collision(i);
-			drawCircle(circles[i].xPos, circles[i].yPos);
+			drawCircle(circles[i].xPos, circles[i].yPos, circles[i].color);
 			updateStorage();
 		}
 		drawCircle(targetX, targetY);
@@ -142,6 +146,15 @@ function moveCircles() {
 function drawCircle(targetX, targetY) {
 	ctx.beginPath();
 	ctx.arc(targetX, targetY, 20, 0, 2 * Math.PI);
+	ctx.stroke();
+}
+
+function drawCircle(targetX, targetY, color) {
+	ctx.beginPath();
+	ctx.arc(targetX, targetY, 20, 0, 2 * Math.PI);
+	ctx.fillStyle = color;
+	ctx.fill();
+	ctx.fillStyle = "#FFFFFF";
 	ctx.stroke();
 }
 
